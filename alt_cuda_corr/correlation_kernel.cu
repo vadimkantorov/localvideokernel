@@ -23,7 +23,7 @@ __global__ void corr_forward_kernel(
     torch::PackedTensorAccessor32<scalar_t,5,torch::RestrictPtrTraits> corr,
     int r)
 {
-  const int b = blockIdx.x;
+  const int b = blockIdx.x; // current example index in batch
   const int h0 = blockIdx.y * blockDim.x;
   const int w0 = blockIdx.z * blockDim.y;
   const int tid = threadIdx.x * blockDim.y + threadIdx.y;

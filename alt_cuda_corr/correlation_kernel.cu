@@ -100,8 +100,10 @@ __global__ void corr_forward_kernel(
           scalar_t sw = s * (1-dy) * (dx);
           scalar_t se = s * (1-dy) * (1-dx);
 
-          scalar_t* corr_ptr = &corr[b][n][0][h1][w1];
+          // corr has logical dimensions [B, N, rd*rd, H, W], rd is radius * 2 + 1, N == 1 (defined below in corr_cuda_forward)
+          scalar_t* corr_ptr = &corr[b][n][0][h1][w1]; // n and 0 seem exchanged. why? what is corr.stride(1)? does it matter?
 
+          // filling out plane corr[b, 0, 0, h1, w1]. it seems that h1, w1 run over fmap1's spatial dims
           if (iy > 0 && ix > 0 && within_bounds(h1, w1, H1, W1))
             *(corr_ptr + ix_nw) += nw;
 

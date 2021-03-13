@@ -28,6 +28,7 @@ __global__ void corr_forward_kernel(
   const int w0 = blockIdx.z * blockDim.y;
   const int tid = threadIdx.x * blockDim.y + threadIdx.y;
 
+  // fmap1, fmap2 logical dimensions are [B, H, W, C]
   const int H1 = fmap1.size(1);
   const int W1 = fmap1.size(2);
   const int H2 = fmap2.size(1);

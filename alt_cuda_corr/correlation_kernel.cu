@@ -36,6 +36,7 @@ __global__ void corr_forward_kernel(
   const int N = coords.size(1);
   const int C = fmap1.size(3);
 
+  // it seems that a block accumulates correlations for CHANNEL_STRIDE number of channels (spaced by CHANNEL_STRIDE as well) and BLOCK_HW + 1 in spatial dimensions
   __shared__ scalar_t f1[CHANNEL_STRIDE][BLOCK_HW+1];
   __shared__ scalar_t f2[CHANNEL_STRIDE][BLOCK_HW+1];
   __shared__ scalar_t x2s[BLOCK_HW];

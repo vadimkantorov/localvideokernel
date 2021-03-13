@@ -21,7 +21,7 @@ __global__ void corr_forward_kernel(
     const torch::PackedTensorAccessor32<scalar_t,4,torch::RestrictPtrTraits> fmap2,
     const torch::PackedTensorAccessor32<scalar_t,5,torch::RestrictPtrTraits> coords,
     torch::PackedTensorAccessor32<scalar_t,5,torch::RestrictPtrTraits> corr,
-    int r) // radius seems measured in feature map indices (not in spatial coords - strange)
+    int r) // the output would have (2r + 1)x(2r + 1) neighbors considered. it seems that spatial addressing wrt coords+radius bounds is performed
 {
   const int b = blockIdx.x; // current example index in batch
   const int h0 = blockIdx.y * blockDim.x;

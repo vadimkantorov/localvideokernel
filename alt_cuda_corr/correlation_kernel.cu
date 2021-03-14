@@ -28,14 +28,14 @@ __global__ void corr_forward_kernel(
   const int w0 = blockIdx.z * blockDim.y; // blockIdx.z is index of spatial vertical line divided by blockDim.y (i.e. blockDim.y is loop stride for w0. does it correspond to BLOCK_W?)
   const int tid = threadIdx.x * blockDim.y + threadIdx.y;
 
-  // fmap1, fmap2 logical dimensions are [B, H, W, C]
+  // fmap1, fmap2 logical dimensions are [B, H, W, C] (fmap1 and fmap2 may well have different spatial dimensions for the spatial pyramid case). do coords have same spatial dims as fmap1? or fmap2?
   const int H1 = fmap1.size(1);
   const int W1 = fmap1.size(2);
   const int H2 = fmap2.size(1);
   const int W2 = fmap2.size(2);
   const int N = coords.size(1);
   const int C = fmap1.size(3);
-
+  
   // it seems that a block accumulates correlations for CHANNEL_STRIDE number of channels (spaced by CHANNEL_STRIDE as well) and BLOCK_HW + 1 in spatial dimensions
   __shared__ scalar_t f1[CHANNEL_STRIDE][BLOCK_HW+1]; // copy buffer for fmap1 features corresponding to the spatial block and strided channels
   __shared__ scalar_t f2[CHANNEL_STRIDE][BLOCK_HW+1]; // copy buffer for fmap1 features corresponding to the spatial block and strided channels

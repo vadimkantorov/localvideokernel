@@ -17,15 +17,15 @@ bool within_bounds(int h, int w, int H, int W) {
 
 template <typename scalar_t>
 __global__ void corr_forward_kernel(
-    const torch::PackedTensorAccessor32<scalar_t,4,torch::RestrictPtrTraits> fmap1,
-    const torch::PackedTensorAccessor32<scalar_t,4,torch::RestrictPtrTraits> fmap2,
-    const torch::PackedTensorAccessor32<scalar_t,5,torch::RestrictPtrTraits> coords,
-    torch::PackedTensorAccessor32<scalar_t,5,torch::RestrictPtrTraits> corr,
+    const torch::PackedTensorAccessor32<scalar_t,4,torch::RestrictPtrTraits> fmap1, // 4-dim tensor
+    const torch::PackedTensorAccessor32<scalar_t,4,torch::RestrictPtrTraits> fmap2, // 4-dim tensor
+    const torch::PackedTensorAccessor32<scalar_t,5,torch::RestrictPtrTraits> coords,// 5-dim tensor
+    torch::PackedTensorAccessor32<scalar_t,5,torch::RestrictPtrTraits> corr,        // 5-dim tensor
     int r) // the output would have (2r + 1)x(2r + 1) neighbors considered. it seems that spatial addressing wrt coords+radius bounds is performed
 {
   const int b = blockIdx.x; // current example index in batch
-  const int h0 = blockIdx.y * blockDim.x;
-  const int w0 = blockIdx.z * blockDim.y;
+  const int h0 = blockIdx.y * blockDim.x; // blockIdx.y is index of spatial horizontal line divided by blockDim.x (i.e. blockDim.x is loop stride for h0. does it correspond to BLOCK_H?)
+  const int w0 = blockIdx.z * blockDim.y; // blockIdx.z is index of spatial vertical line divided by blockDim.y (i.e. blockDim.y is loop stride for w0. does it correspond to BLOCK_W?)
   const int tid = threadIdx.x * blockDim.y + threadIdx.y;
 
   // fmap1, fmap2 logical dimensions are [B, H, W, C]
@@ -42,8 +42,8 @@ __global__ void corr_forward_kernel(
   __shared__ scalar_t x2s[BLOCK_HW]; // x coordinate for spatial location in the block
   __shared__ scalar_t y2s[BLOCK_HW]; // y coordinate for spatial location in the block
 
-  for (int c=0; c<C; c+=CHANNEL_STRIDE) {
-    for (int k=0; k<BLOCK_HW; k+=BLOCK_HW/CHANNEL_STRIDE) {
+  for (int c=0; c<C; c+=CHANNEL_STRIDE) { // stride is 32 
+    for (int k=0; k<BLOCK_HW; k+=BLOCK_HW/CHANNEL_STRIDE) { // here stride is 1
       int k1 = k + tid / CHANNEL_STRIDE;
       int h1 = h0 + k1 / BLOCK_W;
       int w1 = w0 + k1 % BLOCK_W;

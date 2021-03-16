@@ -42,7 +42,10 @@ __global__ void corr_forward_kernel(
   __shared__ scalar_t x2s[BLOCK_HW]; // x coordinate for spatial location in the block
   __shared__ scalar_t y2s[BLOCK_HW]; // y coordinate for spatial location in the block
 
-  for (int c=0; c<C; c+=CHANNEL_STRIDE) { // stride is 32 
+  // global loop over channels?
+  for (int c=0; c<C; c+=CHANNEL_STRIDE) { // stride is 32
+    
+    // fills shared block of feature map f1 from fmap1 (spatial block BLOCK_HW by num of channels CHANNEL_STRIDE)
     for (int k=0; k<BLOCK_HW; k+=BLOCK_HW/CHANNEL_STRIDE) { // here stride is 1
       int k1 = k + tid / CHANNEL_STRIDE;
       int h1 = h0 + k1 / BLOCK_W;
@@ -53,10 +56,10 @@ __global__ void corr_forward_kernel(
       if (within_bounds(h1, w1, H1, W1))
         f1[c1][k1] = fptr[c+c1];
       else
-        f1[c1][k1] = 0.0;
+        f1[c1][k1] = 0.0; // padded by zero. does padding happen only at the right/bottom ends of tensor because of block granularity?
     }
 
-    __syncthreads();
+    __syncthreads(); // wait in all threads and ensure copy-into-f1 completion
 
     for (int n=0; n<N; n++) {
       int h1 = h0 + threadIdx.x;

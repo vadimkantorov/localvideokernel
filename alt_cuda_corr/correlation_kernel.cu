@@ -42,7 +42,7 @@ __global__ void corr_forward_kernel(
   __shared__ scalar_t x2s[BLOCK_HW]; // x coordinate for spatial location in the block
   __shared__ scalar_t y2s[BLOCK_HW]; // y coordinate for spatial location in the block
 
-  // global loop over channels?
+  // outer loop over channels?
   for (int c=0; c<C; c+=CHANNEL_STRIDE) { // stride is 32
     
     // fills shared block of feature map f1 from fmap1 (spatial block BLOCK_HW by num of channels CHANNEL_STRIDE)
@@ -61,18 +61,19 @@ __global__ void corr_forward_kernel(
 
     __syncthreads(); // wait in all threads and ensure copy-into-f1 completion
 
+    // copy coords into shared block memory, N = 1. this does not depend on channel c. could this be done outside the outer loop?
     for (int n=0; n<N; n++) {
-      int h1 = h0 + threadIdx.x;
-      int w1 = w0 + threadIdx.y;
+      int h1 = h0 + threadIdx.x; // seems that threadIdx.x is H coordinate within the spatial block
+      int w1 = w0 + threadIdx.y; // seems that threadIdx.y is the W coordinate within the spatial block (confusing that "y" ~ W coord)
       if (within_bounds(h1, w1, H1, W1)) {
         x2s[tid] = coords[b][n][h1][w1][0];
         y2s[tid] = coords[b][n][h1][w1][1];
       }
 
-      scalar_t dx = x2s[tid] - floor(x2s[tid]);
-      scalar_t dy = y2s[tid] - floor(y2s[tid]);
+      scalar_t dx = x2s[tid] - floor(x2s[tid]); // fractional part of x2s[tid] ? are coords [0, 1]? or [-1, 1]? or [0, W]?
+      scalar_t dy = y2s[tid] - floor(y2s[tid]); // fractional part of y2s[tid] ?
 
-      int rd = 2*r + 1;
+      int rd = 2*r + 1; // spatial diameter size (i.e. square window side)
       for (int iy=0; iy<rd+1; iy++) {
         for (int ix=0; ix<rd+1; ix++) {
           for (int k=0; k<BLOCK_HW; k+=BLOCK_HW/CHANNEL_STRIDE) {

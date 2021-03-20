@@ -113,6 +113,7 @@ __global__ void corr_forward_kernel(
 
           // filling out plane corr[b, 0, 0, h1, w1]. it seems that h1, w1 run over fmap1's spatial dims
           // it seems that a given a (h1, w1) x (h2, w2) dot product is contributed to several target (h1, w1) locations? (proportional to fractional residual)
+          // bounds checks are for (h1, w1) but memory access uses ix_nw/ix_ne/ix_sw/ix_se. are bounds checks correct?
           if (iy > 0 && ix > 0 && within_bounds(h1, w1, H1, W1))
             *(corr_ptr + ix_nw) += nw;
 

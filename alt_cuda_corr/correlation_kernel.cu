@@ -111,6 +111,7 @@ __global__ void corr_forward_kernel(
           scalar_t* corr_ptr = &corr[b][n][0][h1][w1]; // n and 0 seem exchanged. why? what is corr.stride(1)? does it matter?
 
           // filling out plane corr[b, 0, 0, h1, w1]. it seems that h1, w1 run over fmap1's spatial dims
+          // it seems that a given a (h1, w1) x (h2, w2) dot product is contributed to several target (h1, w1) locations? (proportional to fractional residual)
           if (iy > 0 && ix > 0 && within_bounds(h1, w1, H1, W1))
             *(corr_ptr + ix_nw) += nw;
 

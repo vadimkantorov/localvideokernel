@@ -73,6 +73,7 @@ __global__ void corr_forward_kernel(
       scalar_t dx = x2s[tid] - floor(x2s[tid]); // fractional part of x2s[tid] ? are coords [0, 1]? or [-1, 1]? or [0, W]?
       scalar_t dy = y2s[tid] - floor(y2s[tid]); // fractional part of y2s[tid] ?
 
+      // iterate over spatial neighboring patches
       int rd = 2*r + 1; // spatial diameter size (i.e. square window side)
       for (int iy=0; iy<rd+1; iy++) {
         for (int ix=0; ix<rd+1; ix++) {
@@ -82,6 +83,7 @@ __global__ void corr_forward_kernel(
             int w2 = static_cast<int>(floor(x2s[k1]))-r+ix;
             int c2 = tid % CHANNEL_STRIDE;
 
+            // copy the neighboring patch from fmap2 to f2 (with zero padding)
             auto fptr = fmap2[b][h2][w2];
             if (within_bounds(h2, w2, H2, W2))
               f2[c2][k1] = fptr[c+c2];
@@ -93,7 +95,7 @@ __global__ void corr_forward_kernel(
       
           scalar_t s = 0.0;
           for (int k=0; k<CHANNEL_STRIDE; k++)
-            s += f1[k][tid] * f2[k][tid];
+            s += f1[k][tid] * f2[k][tid]; // compute the dot product for the spatial and channel block
 
           int ix_nw = H1*W1*((iy-1) + rd*(ix-1));
           int ix_ne = H1*W1*((iy-1) + rd*ix);

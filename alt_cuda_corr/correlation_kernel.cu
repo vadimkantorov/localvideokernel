@@ -27,6 +27,7 @@ __global__ void corr_forward_kernel(
   const int h0 = blockIdx.y * blockDim.x; // blockIdx.y is index of spatial horizontal line divided by blockDim.x (i.e. blockDim.x is loop stride for h0. does it correspond to BLOCK_H?)
   const int w0 = blockIdx.z * blockDim.y; // blockIdx.z is index of spatial vertical line divided by blockDim.y (i.e. blockDim.y is loop stride for w0. does it correspond to BLOCK_W?)
   const int tid = threadIdx.x * blockDim.y + threadIdx.y;
+  // threadIdx.z seems unused. is it still filled? what does control that it's not used? (i.e. we don't want multiple threads handling the same threadIdx.x / threadIdx.y)
 
   // fmap1, fmap2 logical dimensions are [B, H, W, C] (fmap1 and fmap2 may well have different spatial dimensions for the spatial pyramid case). do coords have same spatial dims as fmap1? or fmap2?
   const int H1 = fmap1.size(1);

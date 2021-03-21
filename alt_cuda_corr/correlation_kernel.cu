@@ -115,6 +115,7 @@ __global__ void corr_forward_kernel(
           // it seems that a given a (h1, w1) x (h2, w2) dot product is contributed to several target (h1, w1) locations? (proportional to fractional residual)
           // bounds checks are for (h1, w1) but memory access uses ix_nw/ix_ne/ix_sw/ix_se. are bounds checks correct?
           // spatial neighbors correlation volume seems to be interpolated with bilinear upsampling here
+          // are there any data races here?
           if (iy > 0 && ix > 0 && within_bounds(h1, w1, H1, W1))
             *(corr_ptr + ix_nw) += nw;
 
